@@ -129,12 +129,14 @@ $prompt-brief create an executable brief for: research the best way to compare p
 Expected behavior:
 
 - the skill inspects the current context first
-- it asks whether to do the prompt-engineering pass in the current chat or via a subagent when that preference was not already specified
+- it asks whether to do the prompt-engineering pass in the current chat or via a subagent when that preference was not already specified in the current invocation
 - it diagnoses what is missing
-- it returns an engineered brief
-- it lists remaining assumptions or gaps
-- it shows an approval menu before any execution happens
+- it uses the native question card when the current environment supports it
+- it uses a Markdown question-card fallback when the native question card is unavailable
+- it returns the engineered brief, remaining assumptions or gaps, and approval menu together in one prompt-brief card
 - when you approve saving, the workflow writes the approved brief to both a workspace-local prompt library and a user-global prompt library
+
+The skill cannot switch Codex into Plan mode by itself. It adapts to the active mode: native ask cards when available, Markdown fallback cards when they are not.
 
 If you specifically want the prompt-engineering pass to use a subagent in environments that require explicit delegation, say so directly:
 

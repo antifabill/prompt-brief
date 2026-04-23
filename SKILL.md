@@ -64,19 +64,21 @@ Do not dump the full conversation or the full repo into the prompt-engineering p
 
 ### 2. Route The Prompt-Engineering Mode
 
-Before choosing local prompt engineering vs subagent prompt engineering, check whether the user already specified a preference.
+Before choosing local prompt engineering vs subagent prompt engineering, check whether the user already specified a preference in the current invocation or current turn.
 
 If the user already clearly asked for one of these, honor it:
 
 - `current chat`
 - `subagent`
 
+Do not reuse an older routing answer from a previous skill run unless the user explicitly says to use the same mode again.
+
 If the user did not specify, ask one short routing question before the rest of the interview:
 
 - `Do you want me to engineer this brief in the current chat, or use a subagent for the prompt-engineering pass?`
 
 When the environment supports `request_user_input`, use it for this routing question.
-Otherwise ask the same question directly in chat.
+Otherwise do not call `request_user_input`; ask the same question directly in chat using the Markdown question-card fallback below.
 
 Recommendation rule:
 
@@ -146,6 +148,28 @@ Rules:
 - Keep ids stable and concise so the main agent can map returned answers back to the prompt-engineering pass.
 - If no question is needed, return `Next Questions: none`.
 
+#### Question UI Rules
+
+Use the best available question surface without changing the rest of the workflow:
+
+- If `request_user_input` is available in the current collaboration mode, use it for routing and interview questions.
+- If `request_user_input` is unavailable, do not call it. Render a Markdown fallback that looks like a question card.
+- Do not claim that the skill can enter or switch to Plan mode. The skill can adapt to the current mode, but it cannot change the runtime mode.
+- Keep fallback question cards concise: one question, recommended option first, alternatives after it, and one-sentence tradeoffs.
+
+Use this Markdown fallback shape:
+
+```md
+**Question**
+<one concise question>
+
+**Recommended:** <option label>
+<one sentence explaining why this is recommended>
+
+**Alternative:** <option label>
+<one sentence explaining the tradeoff>
+```
+
 ### 4. Diagnose Before You Rewrite
 
 Have the prompt-engineering pass evaluate the rough request before producing the final brief:
@@ -168,7 +192,7 @@ Ask at most 1-3 questions per round.
 - Ask only questions that materially change the brief.
 - Do not ask for facts you can discover by exploring the workspace.
 - When the current collaboration mode supports `request_user_input`, use it.
-- Otherwise ask concise questions directly in chat.
+- Otherwise ask concise questions directly in chat using the Markdown question-card fallback.
 - For tasks that involve publishing, repo creation, deployment, external sharing, auth-bound actions, or changes outside the local workspace, do not silently default if key ownership or visibility decisions are still unknown. Ask at least one clarification round unless the user explicitly told you to choose defaults.
 
 For publish/distribution tasks, treat these as high-priority questions when unknown:
@@ -234,7 +258,7 @@ Before presenting the engineered brief, verify that:
 
 ### 8. Present The Approval Menu
 
-Return the result to the user in this order:
+Return the result to the user as one cohesive prompt-brief card, in this order:
 
 1. `Engineered Brief`
 2. `Remaining Gaps / Assumptions`
@@ -244,6 +268,37 @@ Return the result to the user in this order:
    3. `Approve, save, and run`
 
 Rules:
+
+- Keep the engineered brief, remaining gaps, and approval menu together in the same visual block. Do not put the brief in one block and the gaps/menu outside it.
+- Use a Markdown card-style container when no native card UI is available:
+
+````md
+**Prompt Brief Card**
+
+### Engineered Brief
+
+```md
+## Context
+
+## Your task
+
+## Constraints
+
+## Verification (don't finish until)
+
+## Output format
+```
+
+### Remaining Gaps / Assumptions
+
+- ...
+
+### Approval Menu
+
+1. `Revise`
+2. `Approve and save only`
+3. `Approve, save, and run`
+````
 
 - If the user chooses `Revise`, do not write any prompt-library files yet. Continue the interview/revision loop.
 - If the user chooses `Approve and save only`, log the approved brief with `run_mode: not-run`.
