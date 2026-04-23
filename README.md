@@ -1,14 +1,18 @@
 # prompt-brief
 
-`prompt-brief` is a Codex skill for turning rough requests into executable briefs an agent can actually succeed with.
+`prompt-brief` is a Codex skill inspired by Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents).
 
-Instead of treating prompting like chatbot phrasing, the skill reframes the task as worker briefing. It helps the user tighten:
+The skill turns rough requests into executable briefs an agent can actually succeed with. It adapts Shumer's core idea that agents should be briefed like workers, not prompted like chatbots, and packages that approach into an installable Codex skill workflow.
+
+In practice, the skill helps the user tighten:
 
 - context
 - constraints
 - composition
 
 The result is a brief that tells an execution agent what it is doing, what materials matter, what counts as done, and what shape the answer should come back in.
+
+This repository is an adaptation of those briefing ideas for Codex. It is not an official repository from Matt Shumer and should not be presented as one.
 
 ## What This Skill Does
 
@@ -23,6 +27,7 @@ The skill is designed to:
 - optionally save approved briefs into a reusable prompt library
 
 It is intentionally a prompt-engineering skill, not a task-execution shortcut. Its first job is to improve the brief, not to start building the thing.
+The skill does not execute the underlying task until you explicitly approve a run option.
 
 ## The 3 C's
 
@@ -49,16 +54,14 @@ Install the repo directly into your Codex skills directory so the folder name ma
 
 ### Option 1: Clone from GitHub
 
-Replace `<your-github-url>` with the final repo URL:
-
 ```powershell
-git clone <your-github-url> "$HOME/.codex/skills/prompt-brief"
+git clone https://github.com/antifabill/prompt-brief.git "$HOME/.codex/skills/prompt-brief"
 ```
 
 If your Codex setup uses `CODEX_HOME`, you can install it there instead:
 
 ```powershell
-git clone <your-github-url> "$env:CODEX_HOME\\skills\\prompt-brief"
+git clone https://github.com/antifabill/prompt-brief.git "$env:CODEX_HOME\\skills\\prompt-brief"
 ```
 
 ### Option 2: Copy the Folder Manually
@@ -72,6 +75,8 @@ Copy this repo so the final structure looks like:
   references/shumer-agent-briefing.md
   references/prompt-library-format.md
 ```
+
+This shows the minimum required structure for the skill to work. Extra repo files such as `README.md` or `.gitignore` are fine.
 
 ## After Installing
 
@@ -99,6 +104,7 @@ Expected behavior:
 - it returns an engineered brief
 - it lists remaining assumptions or gaps
 - it shows an approval menu before any execution happens
+- when you approve saving, the workflow writes the approved brief to both a workspace-local prompt library and a user-global prompt library
 
 If you specifically want the prompt-engineering pass to use a subagent in environments that require explicit delegation, say so directly:
 
@@ -117,6 +123,4 @@ This skill is especially useful for:
 
 ## Attribution
 
-This skill package is inspired by Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents), published on April 21, 2026.
-
-The repo adapts those briefing ideas into an installable Codex skill workflow. It is not an official repository from Matt Shumer and should not be presented as one.
+This repository adapts the briefing ideas from Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents), published on April 21, 2026, into an installable Codex skill workflow.
