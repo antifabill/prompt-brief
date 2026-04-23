@@ -41,12 +41,19 @@ One of the key ideas behind the skill is that agents work better when they are b
 
 ## Repository Contents
 
-This repo includes the complete skill package:
+This repo includes the complete skill package in two layouts:
 
 - `SKILL.md`
 - `agents/openai.yaml`
 - `references/shumer-agent-briefing.md`
 - `references/prompt-library-format.md`
+- `skills/prompt-brief/SKILL.md`
+- `skills/prompt-brief/agents/openai.yaml`
+- `skills/prompt-brief/references/shumer-agent-briefing.md`
+- `skills/prompt-brief/references/prompt-library-format.md`
+- `scripts/validate-marketplace-layout.ps1`
+
+The root-level files keep direct local installation simple. The `skills/prompt-brief/` copy satisfies marketplaces that expect a skill collection layout.
 
 ## Install
 
@@ -77,6 +84,29 @@ Copy this repo so the final structure looks like:
 ```
 
 This shows the minimum required structure for the skill to work. Extra repo files such as `README.md` or `.gitignore` are fine.
+
+## Marketplace Submission
+
+Some marketplaces expect skill submissions to use a skill collection layout. For those submissions, the required skill entrypoint is:
+
+```text
+skills/prompt-brief/SKILL.md
+```
+
+This repo includes that path so the repository can be submitted as a skill collection artifact. The root-level skill files and the `skills/prompt-brief/` copy should stay in sync.
+
+Before resubmitting, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\validate-marketplace-layout.ps1
+```
+
+The validation script checks that:
+
+- `skills/prompt-brief/SKILL.md` exists
+- the bundled `agents/` and `references/` files exist under `skills/prompt-brief/`
+- the marketplace copy matches the root-level skill files
+- `SKILL.md` still has valid `prompt-brief` frontmatter
 
 ## After Installing
 
