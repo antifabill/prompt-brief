@@ -4,37 +4,52 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$skillRoot = Join-Path $RepoRoot "skills\prompt-brief"
-$requiredFiles = @(
+$sharedRequiredFiles = @(
   "SKILL.md",
   "agents\openai.yaml",
   "references\shumer-agent-briefing.md",
   "references\prompt-library-format.md"
 )
 
-foreach ($relativePath in $requiredFiles) {
+$skills = @(
+  @{ Name = "prompt-brief"; ExtraFiles = @() },
+  @{ Name = "prompt-brief-2"; ExtraFiles = @() },
+  @{ Name = "prompt-brief-3"; ExtraFiles = @("scripts\save-approved-brief.ps1") }
+)
+
+foreach ($skill in $skills) {
+  $skillName = $skill.Name
+  $skillRoot = Join-Path $RepoRoot "skills\$skillName"
+  $requiredFiles = @($sharedRequiredFiles + $skill.ExtraFiles)
+
+  foreach ($relativePath in $requiredFiles) {
+    $packagePath = Join-Path $skillRoot $relativePath
+
+    if (-not (Test-Path -LiteralPath $packagePath -PathType Leaf)) {
+      throw "Missing package file: skills/$skillName/$relativePath"
+    }
+  }
+
+  $skillMd = Get-Content -LiteralPath (Join-Path $skillRoot "SKILL.md") -Raw
+  if ($skillMd -notmatch "(?s)^---\s*.*?name:\s*$([regex]::Escape($skillName))\s*.*?description:\s*.+?\s*---") {
+    throw "Package SKILL.md is missing valid $skillName frontmatter."
+  }
+}
+
+foreach ($relativePath in $sharedRequiredFiles) {
   $rootPath = Join-Path $RepoRoot $relativePath
-  $marketplacePath = Join-Path $skillRoot $relativePath
+  $packagePath = Join-Path $RepoRoot "skills\prompt-brief\$relativePath"
 
   if (-not (Test-Path -LiteralPath $rootPath -PathType Leaf)) {
     throw "Missing root skill file: $relativePath"
   }
 
-  if (-not (Test-Path -LiteralPath $marketplacePath -PathType Leaf)) {
-    throw "Missing marketplace skill file: skills/prompt-brief/$relativePath"
-  }
+  $rootContent = (Get-Content -LiteralPath $rootPath -Raw) -replace "`r`n", "`n"
+  $packageContent = (Get-Content -LiteralPath $packagePath -Raw) -replace "`r`n", "`n"
 
-  $rootHash = (Get-FileHash -LiteralPath $rootPath -Algorithm SHA256).Hash
-  $marketplaceHash = (Get-FileHash -LiteralPath $marketplacePath -Algorithm SHA256).Hash
-
-  if ($rootHash -ne $marketplaceHash) {
-    throw "Marketplace copy is out of sync: $relativePath"
+  if ($rootContent -ne $packageContent) {
+    throw "Root prompt-brief copy is out of sync: $relativePath"
   }
 }
 
-$skillMd = Get-Content -LiteralPath (Join-Path $skillRoot "SKILL.md") -Raw
-if ($skillMd -notmatch "(?s)^---\s*.*?name:\s*prompt-brief\s*.*?description:\s*.+?\s*---") {
-  throw "Marketplace SKILL.md is missing valid prompt-brief frontmatter."
-}
-
-Write-Host "Marketplace layout OK: skills/prompt-brief/SKILL.md and bundled files are present and in sync."
+Write-Host "Package layout OK: prompt-brief, prompt-brief-2, and prompt-brief-3 are present and valid."

@@ -1,158 +1,109 @@
-# prompt-brief
+# prompt-brief skills
 
-`prompt-brief` is a Codex skill inspired by Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents).
+`prompt-brief` is a family of Codex skills inspired by Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents).
 
-The skill turns rough requests into executable briefs an agent can actually succeed with. It adapts Shumer's core idea that agents should be briefed like workers, not prompted like chatbots, and packages that approach into an installable Codex skill workflow.
+The skills turn rough requests into executable briefs an agent can actually succeed with. They adapt Shumer's core idea that agents should be briefed like workers, not prompted like chatbots, and organize a task around the three C's:
 
-In practice, the skill helps the user tighten:
-
-- context
-- constraints
-- composition
-
-The result is a brief that tells an execution agent what it is doing, what materials matter, what counts as done, and what shape the answer should come back in.
+- `Context`: goal, audience, current state, materials, references, and intended use
+- `Constraints`: requirements, non-goals, limits, risks, verification, and stopping conditions
+- `Composition`: output shape, sections, deliverables, format, and runner/tool payload needs
 
 This repository is an adaptation of those briefing ideas for Codex. It is not an official repository from Matt Shumer and should not be presented as one.
 
-## What This Skill Does
+## Versions
 
-Use `prompt-brief` when you have a task that is still vague, underspecified, or easy for an agent to misinterpret.
+This repo contains three side-by-side versions. They share the same briefing foundation, but differ in how strongly they guide the interview.
 
-The skill is designed to:
+| Skill | Best for | Behavior |
+| --- | --- | --- |
+| `prompt-brief` | Original approval-first brief engineering | Grounds the request, drafts a structured prompt-brief card, and stops for approval before save/run. |
+| `prompt-brief-2` | More guided clarification | Adds a stronger question gate and prefers multiple-choice clarification when user-owned context is missing. |
+| `prompt-brief-3` | Adaptive interview, one question at a time | Evaluates `Context`, `Constraints`, and `Composition` as separate paths, asks exactly one material question per turn, labels multiple-choice answers `A.`, `B.`, `C.`, `D.`, and separates the human brief from runner-specific execution payloads. |
 
-- diagnose weak or incomplete prompts
-- translate rough requests into actionable agent briefs
-- surface missing assumptions, verification gaps, and output-shape problems
-- present an approval flow before execution
-- optionally save approved briefs into a reusable prompt library
+## Repository Layout
 
-It is intentionally a prompt-engineering skill, not a task-execution shortcut. Its first job is to improve the brief, not to start building the thing.
-The skill does not execute the underlying task until you explicitly approve a run option.
+```text
+.
+├── SKILL.md                         # Root copy of prompt-brief v1
+├── agents/openai.yaml               # Root UI metadata for v1
+├── references/                      # Shared briefing references for v1 root copy
+├── scripts/validate-marketplace-layout.ps1
+└── skills/
+    ├── prompt-brief/                # Installable v1 package
+    ├── prompt-brief-2/              # Installable v2 package
+    └── prompt-brief-3/              # Installable v3 package
+```
 
-## The 3 C's
-
-The skill is built around a simple briefing framework:
-
-- `Context`: the real objective, audience, current environment, files, docs, references, and current state
-- `Constraints`: the requirements, limits, verification rules, and stopping conditions that define acceptable work
-- `Composition`: the exact structure the execution agent should return
-
-One of the key ideas behind the skill is that agents work better when they are briefed like workers, not chatted with like assistants.
-
-## Repository Contents
-
-This repo includes the complete skill package in two layouts:
-
-- `SKILL.md`
-- `agents/openai.yaml`
-- `references/shumer-agent-briefing.md`
-- `references/prompt-library-format.md`
-- `skills/prompt-brief/SKILL.md`
-- `skills/prompt-brief/agents/openai.yaml`
-- `skills/prompt-brief/references/shumer-agent-briefing.md`
-- `skills/prompt-brief/references/prompt-library-format.md`
-- `scripts/validate-marketplace-layout.ps1`
-
-The root-level files keep direct local installation simple. The `skills/prompt-brief/` copy satisfies marketplaces that expect a skill collection layout.
+The `skills/<name>/` folders are the installable skill packages. The root-level files are kept for the original `prompt-brief` direct-install layout.
 
 ## Install
 
-Install the repo directly into your Codex skills directory so the folder name matches the skill name.
-
-### Option 1: Clone from GitHub
+Install one version by copying its folder from `skills/` into your Codex skills directory:
 
 ```powershell
-git clone https://github.com/antifabill/prompt-brief.git "$HOME/.codex/skills/prompt-brief"
+git clone https://github.com/antifabill/prompt-brief.git "$env:TEMP\prompt-brief-skills"
+Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief-3" "$HOME\.codex\skills\prompt-brief-3" -Recurse -Force
 ```
 
-If your Codex setup uses `CODEX_HOME`, you can install it there instead:
+Change `prompt-brief-3` to `prompt-brief` or `prompt-brief-2` to install a different version.
+
+To install all three:
 
 ```powershell
-git clone https://github.com/antifabill/prompt-brief.git "$env:CODEX_HOME\\skills\\prompt-brief"
+git clone https://github.com/antifabill/prompt-brief.git "$env:TEMP\prompt-brief-skills"
+Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief" "$HOME\.codex\skills\prompt-brief" -Recurse -Force
+Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief-2" "$HOME\.codex\skills\prompt-brief-2" -Recurse -Force
+Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief-3" "$HOME\.codex\skills\prompt-brief-3" -Recurse -Force
 ```
 
-### Option 2: Copy the Folder Manually
-
-Copy this repo so the final structure looks like:
-
-```text
-~/.codex/skills/prompt-brief/
-  SKILL.md
-  agents/openai.yaml
-  references/shumer-agent-briefing.md
-  references/prompt-library-format.md
-```
-
-This shows the minimum required structure for the skill to work. Extra repo files such as `README.md` or `.gitignore` are fine.
-
-## Marketplace Submission
-
-Some marketplaces expect skill submissions to use a skill collection layout. For those submissions, the required skill entrypoint is:
-
-```text
-skills/prompt-brief/SKILL.md
-```
-
-This repo includes that path so the repository can be submitted as a skill collection artifact. The root-level skill files and the `skills/prompt-brief/` copy should stay in sync.
-
-Before resubmitting, run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\validate-marketplace-layout.ps1
-```
-
-The validation script checks that:
-
-- `skills/prompt-brief/SKILL.md` exists
-- the bundled `agents/` and `references/` files exist under `skills/prompt-brief/`
-- the marketplace copy matches the root-level skill files
-- `SKILL.md` still has valid `prompt-brief` frontmatter
-
-## After Installing
-
-If Codex was already open before installation, start a new session or restart Codex so the newly installed skill is picked up in the active skill list.
+If Codex was already open before installation, start a new session or restart Codex so the new skills are picked up in the active skill list.
 
 ## Usage
 
-Invoke the skill directly with a rough task:
+Invoke the version you want:
 
 ```text
 $prompt-brief create an executable brief for: refactor the auth flow without breaking the public API
 ```
 
-Another example:
-
 ```text
-$prompt-brief create an executable brief for: research the best way to compare pricing pages for three competitors
+$prompt-brief-2 create an executable brief for: research the best way to compare pricing pages for three competitors
 ```
 
-Expected behavior:
-
-- the skill inspects the current context first
-- it asks whether to do the prompt-engineering pass in the current chat or via a subagent when that preference was not already specified in the current invocation
-- it diagnoses what is missing
-- it uses the native question card when the current environment supports it
-- it uses a Markdown question-card fallback when the native question card is unavailable
-- it returns the engineered brief, remaining assumptions or gaps, and approval menu together in one prompt-brief card
-- when you approve saving, the workflow writes the approved brief to both a workspace-local prompt library and a user-global prompt library
-
-The skill cannot switch Codex into Plan mode by itself. It adapts to the active mode: native ask cards when available, Markdown fallback cards when they are not.
-
-If you specifically want the prompt-engineering pass to use a subagent in environments that require explicit delegation, say so directly:
-
 ```text
-$prompt-brief use a subagent to engineer this brief: create a GitHub repo for the prompt-brief skill
+$prompt-brief-3 create an executable brief for: generate three premium iOS app screens for managing saved X articles
 ```
 
-## Good Fit
+Expected shared behavior:
 
-This skill is especially useful for:
+- The skill treats the rough request as a prompt-engineering task, not permission to execute the underlying work.
+- It grounds itself in the current workspace when useful.
+- It produces an engineered brief with context, constraints, verification, and output format.
+- It stops at an approval menu before saving or running the underlying task.
 
-- coding tasks that need real verification
-- research tasks that need sources and explicit output shape
-- writing tasks where audience, tone, and source materials matter
-- planning tasks where "done" is otherwise fuzzy
+V3 adds the strongest interview behavior:
+
+- exactly one material question per turn
+- multiple distinct paths based on `Context`, `Constraints`, and `Composition`
+- multiple-choice options labeled `A.`, `B.`, `C.`, `D.` so the user can answer with one letter
+- a `Human Brief` for approval and a separate `Execution Payload` after approval
+- a deterministic save helper at `skills/prompt-brief-3/scripts/save-approved-brief.ps1`
+
+## Validation
+
+Run the validation script before pushing changes:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\validate-marketplace-layout.ps1
+```
+
+The script checks that:
+
+- `skills/prompt-brief`, `skills/prompt-brief-2`, and `skills/prompt-brief-3` each have a valid `SKILL.md`
+- each package includes its `agents/openai.yaml` and briefing references
+- the root v1 files match `skills/prompt-brief`
+- V3 includes its save helper in the installable package
 
 ## Attribution
 
-This repository adapts the briefing ideas from Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents), published on April 21, 2026, into an installable Codex skill workflow.
+This repository adapts the briefing ideas from Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents), published on April 21, 2026, into installable Codex skill workflows.

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Prompt Brief 2"
+  short_description: "Interview first, then create agent briefs"
+  default_prompt: "Use $prompt-brief-2 to turn this rough task into an executable agent brief. Do not execute the task yet. First diagnose whether material user-owned context is missing; if it is, ask 1-3 guiding questions, preferring multiple-choice. Only return the prompt-brief card with engineered brief, assumptions, and approval menu when no material questions remain: [paste rough task here]"
+policy:
+  allow_implicit_invocation: false

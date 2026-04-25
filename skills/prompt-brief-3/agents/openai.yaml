@@ -1,0 +1,6 @@
+interface:
+  display_name: "Prompt Brief 3"
+  short_description: "One question at a time across the 3 C's"
+  default_prompt: "Use $prompt-brief-3 to turn this rough task into an executable agent brief. Do not execute the task yet. First evaluate Context, Constraints, and Composition; ask exactly one material guiding question at a time, preferring multiple-choice options labeled A., B., C., D. so I can answer with one letter. Return the prompt-brief card only when all three C paths are resolved, and build any runner-specific execution payload only after approval: [paste rough task here]"
+policy:
+  allow_implicit_invocation: false
