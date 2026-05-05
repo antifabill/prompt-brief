@@ -1,6 +1,6 @@
 interface:
   display_name: "Prompt Brief"
-  short_description: "Agent briefs with GPT-5.5 tuning"
-  default_prompt: "Use $prompt-brief to turn this rough task into an executable agent brief I can approve, save, and run. Use `$prompt-brief 5.5: ...` when I want GPT-5.5 tuning. Do not execute the task yet; first return one prompt-brief card with the engineered brief, assumptions, mode, and approval menu: [paste rough task here]"
+  short_description: "3 C's briefs with GPT-5.5 tuning"
+  default_prompt: "Use $prompt-brief to turn this rough task into an executable agent brief. Use `$prompt-brief 5.5: ...` when I want GPT-5.5 tuning. Do not execute the task yet; ask exactly one material question at a time, return the prompt-brief card first, and build any runner-specific execution payload only after approval: [paste rough task here]"
 policy:
   allow_implicit_invocation: false

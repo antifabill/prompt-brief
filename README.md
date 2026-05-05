@@ -18,7 +18,7 @@ This repo contains three side-by-side versions. They share the same briefing fou
 
 | Skill | Best for | Behavior |
 | --- | --- | --- |
-| `prompt-brief` | Original approval-first brief engineering plus GPT-5.5 tuning | Grounds the request, drafts a structured prompt-brief card, stops for approval before save/run, and supports optional GPT-5.5 tuning with `5.5`. |
+| `prompt-brief` | Current adaptive one-question flow plus GPT-5.5 tuning | Evaluates `Context`, `Constraints`, and `Composition` as separate paths, asks exactly one material question per turn, separates the human brief from runner-specific execution payloads, and supports optional GPT-5.5 tuning with `5.5`. |
 | `prompt-brief-2` | More guided clarification | Adds a stronger question gate and prefers multiple-choice clarification when user-owned context is missing. |
 | `prompt-brief-3` | Adaptive interview, one question at a time | Evaluates `Context`, `Constraints`, and `Composition` as separate paths, asks exactly one material question per turn, labels multiple-choice answers `A.`, `B.`, `C.`, `D.`, and separates the human brief from runner-specific execution payloads. |
 
@@ -40,14 +40,14 @@ The `skills/<name>/` folders are the installable skill packages. The root-level 
 
 ## Install
 
-Install one version by copying its folder from `skills/` into your Codex skills directory:
+Install the current `prompt-brief` skill by copying its folder from `skills/` into your Codex skills directory:
 
 ```powershell
 git clone https://github.com/antifabill/prompt-brief.git "$env:TEMP\prompt-brief-skills"
-Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief-3" "$HOME\.codex\skills\prompt-brief-3" -Recurse -Force
+Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief" "$HOME\.codex\skills\prompt-brief" -Recurse -Force
 ```
 
-Change `prompt-brief-3` to `prompt-brief` or `prompt-brief-2` to install a different version.
+Change `prompt-brief` to `prompt-brief-2` or `prompt-brief-3` to install an older side-by-side variant.
 
 To install all three:
 
@@ -110,6 +110,8 @@ V3 adds the strongest interview behavior:
 - multiple-choice options labeled `A.`, `B.`, `C.`, `D.` so the user can answer with one letter
 - a `Human Brief` for approval and a separate `Execution Payload` after approval
 - a deterministic save helper at `skills/prompt-brief-3/scripts/save-approved-brief.ps1`
+
+Those v3 behaviors are now also carried forward in the current `prompt-brief` package, where the GPT-5.5 mode lives.
 
 ## Validation
 
