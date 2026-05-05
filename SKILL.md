@@ -1,6 +1,6 @@
 ---
 name: prompt-brief
-description: Turn a rough user request into an executable agent brief with stronger context, constraints, and output composition. Use when the user asks to improve or engineer a prompt for an AI agent, wants help turning a vague task into a runnable brief, wants guidance gathering missing context or verification criteria, or wants approved briefs logged into a reusable prompt library.
+description: Turn a rough user request into an executable agent brief with stronger context, constraints, and output composition. Use when the user asks to improve or engineer a prompt for an AI agent, wants help turning a vague task into a runnable brief, wants guidance gathering missing context or verification criteria, wants approved briefs logged into a reusable prompt library, or invokes GPT-5.5 tuning with `5.5`, `gpt-5.5`, `gpt-5-5`, or `tune-gpt-5.5`.
 argument-hint: "[rough task]"
 user-invocable: true
 ---
@@ -21,6 +21,7 @@ Read [references/shumer-agent-briefing.md](references/shumer-agent-briefing.md) 
 ## Core Standard
 
 - Treat the input as a rough brief, not as the final prompt.
+- If the rough brief starts with `5.5:`, `gpt-5.5:`, `gpt-5-5:`, `tune-gpt-5.5:`, or the same marker without a colon, activate `GPT-5.5 tuning mode` and remove only the marker from the rough brief before continuing.
 - Build the final brief around the three C's:
   - `Context`: the real objective, audience, working environment, materials, references, files, and current state.
   - `Constraints`: success criteria, verification, stopping conditions, hard requirements, and forbidden shortcuts.
@@ -30,6 +31,60 @@ Read [references/shumer-agent-briefing.md](references/shumer-agent-briefing.md) 
 - When the user does not naturally provide context, constraints, or composition, translate their rough request into those categories yourself and then ask only for the missing pieces.
 - Default to agent-style briefs, not generic chatbot prompt polishing.
 - Default to returning a prompt artifact, not doing the task described by the prompt.
+
+## GPT-5.5 Tuning Mode
+
+Use this optional mode when the invocation begins with one of these aliases:
+
+- `5.5`
+- `gpt-5.5`
+- `gpt-5-5`
+- `tune-gpt-5.5`
+
+Canonical invocation:
+
+```text
+$prompt-brief 5.5: <rough task>
+```
+
+In this mode, keep the original three-C briefing method. Do not skip Context, Constraints, or Composition. The difference is the compiled execution payload: make it lean, outcome-first, and tuned for GPT-5.5 rather than preserving every human-facing note.
+
+When GPT-5.5 tuning mode is active:
+
+- Keep the `Human Brief` review card unchanged unless the user asks for a different review format.
+- After approval, generate a `GPT-5.5 Tuned Execution Payload` for `current-agent` or `fresh-agent` runners.
+- Make the payload concise and direct. Prefer clear success criteria over long process scripts.
+- Remove redundant inherited instructions, generic motivational text, and heavy `ALWAYS` / `NEVER` stacks unless they are true hard constraints.
+- Include only execution-useful context, evidence, files, URLs, assumptions, and materials.
+- Add a short `Preamble` only for multi-step or tool-heavy work where progress updates are useful.
+- Add a `Retrieval Budget` only when the task involves research, codebase exploration, docs, files, or external evidence.
+- Add `Validation / Stop Rules` with concrete checks whenever the task can be verified.
+- Keep personality, tone, and collaboration guidance short and only when it affects the user-facing outcome.
+- If the user asks for model settings, suggest trying low or medium reasoning first before escalating, unless the task is clearly high stakes or complex.
+
+Use this payload shape unless a runner needs a narrower format:
+
+```md
+## Goal
+
+## Success criteria
+
+## Context / evidence
+
+## Constraints
+
+## Validation / stop rules
+
+## Output
+
+## Preamble
+
+## Retrieval budget
+
+## Personality / collaboration
+```
+
+Omit optional sections that do not materially help the run.
 
 ## Hard Boundary
 
@@ -262,7 +317,8 @@ Return the result to the user as one cohesive prompt-brief card, in this order:
 
 1. `Engineered Brief`
 2. `Remaining Gaps / Assumptions`
-3. Approval menu:
+3. `Mode`
+4. Approval menu:
    1. `Revise`
    2. `Approve and save only`
    3. `Approve, save, and run`
@@ -292,6 +348,10 @@ Rules:
 ### Remaining Gaps / Assumptions
 
 - ...
+
+### Mode
+
+- `Standard` or `GPT-5.5 tuning`
 
 ### Approval Menu
 
@@ -336,6 +396,7 @@ If the user chooses to run the approved brief:
 - then execute with the selected run mode
 - when using a fresh execution agent, pass the approved engineered brief plus the same curated context bundle you assembled earlier
 - when using the current agent, treat the engineered brief as the active task contract
+- when GPT-5.5 tuning mode is active with the current or fresh agent, compile the approved engineered brief and curated context bundle into the `GPT-5.5 Tuned Execution Payload` before running
 
 ## Notes
 
