@@ -1,82 +1,108 @@
-# prompt-brief skills
+# prompt-brief
 
-`prompt-brief` is a family of Codex skills inspired by Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents).
+`prompt-brief` is a Codex skill inspired by Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents).
 
-The skills turn rough requests into executable briefs an agent can actually succeed with. They adapt Shumer's core idea that agents should be briefed like workers, not prompted like chatbots, and organize a task around the three C's:
+It turns rough requests into executable agent briefs through an adaptive, one-question-at-a-time interview. The skill keeps the core briefing idea from the article: agents work better when they are briefed like workers, not casually prompted like chatbots.
 
-- `Context`: goal, audience, current state, materials, references, and intended use
-- `Constraints`: requirements, non-goals, limits, risks, verification, and stopping conditions
-- `Composition`: output shape, sections, deliverables, format, and runner/tool payload needs
+It also includes an optional GPT-5.5 tuning mode that keeps the same briefing method but compiles the approved brief into a leaner, outcome-first execution payload aligned with OpenAI's [GPT-5.5 prompt guidance](https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5).
 
-This repository is an adaptation of those briefing ideas for Codex. It is not an official repository from Matt Shumer and should not be presented as one.
+## What The Skill Does
 
-`prompt-brief` also includes an optional GPT-5.5 tuning mode that keeps the same three-C briefing method but compiles the approved brief into a leaner, outcome-first execution payload aligned with OpenAI's [GPT-5.5 prompt guidance](https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5).
+`prompt-brief` helps the user tighten three things before execution:
 
-## Versions
+- `Context`: goal, audience, current state, materials, references, task background, and intended use
+- `Constraints`: hard requirements, non-goals, scope limits, risks, verification, and stopping conditions
+- `Composition`: exact output shape, deliverables, format, sections, and runner/tool payload needs
 
-This repo contains three side-by-side versions. They share the same briefing foundation, but differ in how strongly they guide the interview.
+The skill asks exactly one material question at a time, re-evaluates all three C paths after each answer, and stops at an approval menu before any execution happens.
 
-| Skill | Best for | Behavior |
-| --- | --- | --- |
-| `prompt-brief` | Current adaptive one-question flow plus GPT-5.5 tuning | Evaluates `Context`, `Constraints`, and `Composition` as separate paths, asks exactly one material question per turn, separates the human brief from runner-specific execution payloads, and supports optional GPT-5.5 tuning with `5.5`. |
-| `prompt-brief-2` | More guided clarification | Adds a stronger question gate and prefers multiple-choice clarification when user-owned context is missing. |
-| `prompt-brief-3` | Adaptive interview, one question at a time | Evaluates `Context`, `Constraints`, and `Composition` as separate paths, asks exactly one material question per turn, labels multiple-choice answers `A.`, `B.`, `C.`, `D.`, and separates the human brief from runner-specific execution payloads. |
+## Human Brief And Execution Payload
+
+The `Human Brief` is the artifact shown for approval. It is readable and structured:
+
+- `Context`
+- `Your task`
+- `Constraints`
+- `Verification`
+- `Output format`
+
+The `Execution Payload` is generated only after approval and is tailored to the selected runner.
+
+When GPT-5.5 tuning mode is active, the execution payload is compiled into a concise model-tuned shape:
+
+- `Goal`
+- `Success criteria`
+- `Context / evidence`
+- `Constraints`
+- `Validation / stop rules`
+- `Output`
+- optional `Preamble`
+- optional `Retrieval budget`
+- optional `Personality / collaboration`
+
+The mode keeps the original three-C interview, but removes redundant process-heavy wording from the final runner payload.
+
+For example, when running with `imagegen`, the payload should contain only image-generation instructions. Captions, notes, or evaluation text should be handled by the chat agent after generation, not promised as part of the image tool output.
 
 ## Repository Layout
 
+This repository contains one canonical skill package:
+
 ```text
-.
-├── SKILL.md                         # Root copy of prompt-brief v1
-├── agents/openai.yaml               # Root UI metadata for v1
-├── references/                      # Shared briefing references for v1 root copy
-├── scripts/validate-marketplace-layout.ps1
-└── skills/
-    ├── prompt-brief/                # Installable v1 package
-    ├── prompt-brief-2/              # Installable v2 package
-    └── prompt-brief-3/              # Installable v3 package
+skills/prompt-brief/
+  SKILL.md
+  agents/openai.yaml
+  references/shumer-agent-briefing.md
+  references/prompt-library-format.md
+  scripts/save-approved-brief.ps1
+  scripts/validate-marketplace-layout.ps1
 ```
 
-The `skills/<name>/` folders are the installable skill packages. The root-level files are kept for the original `prompt-brief` direct-install layout.
+The skill definition lives only under `skills/prompt-brief/`.
 
 ## Install
 
-Install the current `prompt-brief` skill by copying its folder from `skills/` into your Codex skills directory:
+Clone the repository, then copy the packaged skill folder into your Codex skills directory so the final installed path is `prompt-brief`.
+
+### Option 1: Clone and copy
 
 ```powershell
-git clone https://github.com/antifabill/prompt-brief.git "$env:TEMP\prompt-brief-skills"
-Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief" "$HOME\.codex\skills\prompt-brief" -Recurse -Force
+git clone <your-github-url> "$HOME\\prompt-brief"
+Copy-Item -Recurse -Force "$HOME\\prompt-brief\\skills\\prompt-brief" "$HOME\\.codex\\skills\\prompt-brief"
 ```
 
-Change `prompt-brief` to `prompt-brief-2` or `prompt-brief-3` to install an older side-by-side variant.
-
-To install all three:
+If your Codex setup uses `CODEX_HOME`, install there instead:
 
 ```powershell
-git clone https://github.com/antifabill/prompt-brief.git "$env:TEMP\prompt-brief-skills"
-Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief" "$HOME\.codex\skills\prompt-brief" -Recurse -Force
-Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief-2" "$HOME\.codex\skills\prompt-brief-2" -Recurse -Force
-Copy-Item "$env:TEMP\prompt-brief-skills\skills\prompt-brief-3" "$HOME\.codex\skills\prompt-brief-3" -Recurse -Force
+git clone <your-github-url> "$HOME\\prompt-brief"
+Copy-Item -Recurse -Force "$HOME\\prompt-brief\\skills\\prompt-brief" "$env:CODEX_HOME\\skills\\prompt-brief"
 ```
 
-If Codex was already open before installation, start a new session or restart Codex so the new skills are picked up in the active skill list.
+### Option 2: Copy the packaged folder manually
+
+Copy `skills/prompt-brief/` from this repo so the final installed structure looks like:
+
+```text
+~/.codex/skills/prompt-brief/
+  SKILL.md
+  agents/openai.yaml
+  references/shumer-agent-briefing.md
+  references/prompt-library-format.md
+  scripts/save-approved-brief.ps1
+  scripts/validate-marketplace-layout.ps1
+```
+
+If Codex was already open before installation, start a new session or restart Codex so the skill is picked up in the active skill list.
 
 ## Usage
 
-Invoke the version you want:
+Invoke the skill directly with a rough task:
 
 ```text
 $prompt-brief create an executable brief for: refactor the auth flow without breaking the public API
 ```
 
-```text
-$prompt-brief-2 create an executable brief for: research the best way to compare pricing pages for three competitors
-```
-
-```text
-$prompt-brief-3 create an executable brief for: generate three premium iOS app screens for managing saved X articles
-```
-
-Use GPT-5.5 tuning mode in `prompt-brief` by putting `5.5` at the start of the rough task:
+Use GPT-5.5 tuning mode by putting `5.5` at the start of the rough task:
 
 ```text
 $prompt-brief 5.5: create an executable brief for: refactor the auth flow without breaking the public API
@@ -90,46 +116,35 @@ $prompt-brief gpt-5-5: <rough task>
 $prompt-brief tune-gpt-5.5: <rough task>
 ```
 
-Expected shared behavior:
+Another example:
 
-- The skill treats the rough request as a prompt-engineering task, not permission to execute the underlying work.
-- It grounds itself in the current workspace when useful.
-- It produces an engineered brief with context, constraints, verification, and output format.
-- It stops at an approval menu before saving or running the underlying task.
-
-`prompt-brief` GPT-5.5 tuning adds:
-
-- a concise approved-run payload with `Goal`, `Success criteria`, `Context / evidence`, `Constraints`, `Validation / stop rules`, and `Output`
-- optional `Preamble`, `Retrieval budget`, and `Personality / collaboration` sections when useful
-- leaner wording that preserves the original brief's intent and hard constraints without carrying unnecessary process scaffolding
-
-V3 adds the strongest interview behavior:
-
-- exactly one material question per turn
-- multiple distinct paths based on `Context`, `Constraints`, and `Composition`
-- multiple-choice options labeled `A.`, `B.`, `C.`, `D.` so the user can answer with one letter
-- a `Human Brief` for approval and a separate `Execution Payload` after approval
-- a deterministic save helper at `skills/prompt-brief-3/scripts/save-approved-brief.ps1`
-
-Those v3 behaviors are now also carried forward in the current `prompt-brief` package, where the GPT-5.5 mode lives.
-
-## Validation
-
-Run the validation script before pushing changes:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\validate-marketplace-layout.ps1
+```text
+$prompt-brief create an executable brief for: image creation task - a premium UI for an iOS app that manages saved X articles
 ```
 
-The script checks that:
+Expected behavior:
 
-- `skills/prompt-brief`, `skills/prompt-brief-2`, and `skills/prompt-brief-3` each have a valid `SKILL.md`
-- each package includes its `agents/openai.yaml` and briefing references
-- the root v1 files match `skills/prompt-brief`
-- V3 includes its save helper in the installable package
+- The skill grounds itself in the current workspace first.
+- It routes the prompt-engineering pass to current chat or subagent if needed.
+- It asks one material guiding question at a time.
+- It prefers multiple-choice questions when choices can guide the user cleanly.
+- It checks `Context`, `Constraints`, and `Composition` before finalizing.
+- It returns one prompt-brief card with a human brief, remaining assumptions, a three-C check, and approval menu.
+- After approval, it saves with the helper and builds a runner-specific execution payload.
+- In GPT-5.5 tuning mode, it compiles a concise GPT-5.5 tuned execution payload after approval.
+
+## Good Fit
+
+This skill is especially useful for:
+
+- coding tasks that need concrete verification
+- research tasks that need sources and output shape
+- writing tasks where audience and materials matter
+- image or design tasks where the run payload must match the selected tool
+- planning tasks where "done" is otherwise fuzzy
 
 ## Attribution
 
-This repository adapts the briefing ideas from Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents), published on April 21, 2026, into installable Codex skill workflows.
+This repository adapts the briefing ideas from Matt Shumer's article, [The Ultimate Guide to Prompting AI Agents](https://shumer.dev/prompting-ai-agents), published on April 21, 2026, into an installable Codex skill workflow.
 
 The optional GPT-5.5 tuning mode is informed by OpenAI's [GPT-5.5 prompt guidance](https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5).
